@@ -1,0 +1,17 @@
+/tmp/rxtest/bin/Debug/net7.0/rxtest
+/tmp/rxtest/bin/Debug/net7.0/rxtest.deps.json
+/tmp/rxtest/bin/Debug/net7.0/rxtest.runtimeconfig.json
+/tmp/rxtest/bin/Debug/net7.0/rxtest.dll
+/tmp/rxtest/bin/Debug/net7.0/rxtest.pdb
+/tmp/rxtest/bin/Debug/net7.0/System.Reactive.dll
+/tmp/rxtest/obj/Debug/net7.0/rxtest.csproj.AssemblyReference.cache
+/tmp/rxtest/obj/Debug/net7.0/rxtest.GeneratedMSBuildEditorConfig.editorconfig
+/tmp/rxtest/obj/Debug/net7.0/rxtest.AssemblyInfoInputs.cache
+/tmp/rxtest/obj/Debug/net7.0/rxtest.AssemblyInfo.cs
+/tmp/rxtest/obj/Debug/net7.0/rxtest.csproj.CoreCompileInputs.cache
+/tmp/rxtest/obj/Debug/net7.0/rxtest.csproj.CopyComplete
+/tmp/rxtest/obj/Debug/net7.0/rxtest.dll
+/tmp/rxtest/obj/Debug/net7.0/refint/rxtest.dll
+/tmp/rxtest/obj/Debug/net7.0/rxtest.pdb
+/tmp/rxtest/obj/Debug/net7.0/rxtest.genruntimeconfig.cache
+/tmp/rxtest/obj/Debug/net7.0/ref/rxtest.dll

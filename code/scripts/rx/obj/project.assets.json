@@ -1,0 +1,121 @@
+{
+  "version": 3,
+  "targets": {
+    "net7.0": {
+      "System.Reactive/5.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net5.0/System.Reactive.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net5.0/System.Reactive.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net5.0/_._": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "System.Reactive/5.0.0": {
+      "sha512": "erBZjkQHWL9jpasCE/0qKAryzVBJFxGHVBAvgRN1bzM0q2s1S4oYREEEL0Vb+1kA/6BKb5FjUZMp5VXmy+gzkQ==",
+      "type": "package",
+      "path": "system.reactive/5.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "build/net5.0/_._",
+        "build/netcoreapp3.1/System.Reactive.dll",
+        "build/netcoreapp3.1/System.Reactive.targets",
+        "build/netcoreapp3.1/System.Reactive.xml",
+        "buildTransitive/net5.0/_._",
+        "buildTransitive/netcoreapp3.1/System.Reactive.targets",
+        "lib/net472/System.Reactive.dll",
+        "lib/net472/System.Reactive.xml",
+        "lib/net5.0-windows10.0.19041/System.Reactive.dll",
+        "lib/net5.0-windows10.0.19041/System.Reactive.xml",
+        "lib/net5.0/System.Reactive.dll",
+        "lib/net5.0/System.Reactive.xml",
+        "lib/netcoreapp3.1/_._",
+        "lib/netstandard2.0/System.Reactive.dll",
+        "lib/netstandard2.0/System.Reactive.xml",
+        "lib/uap10.0.16299/System.Reactive.dll",
+        "lib/uap10.0.16299/System.Reactive.pri",
+        "lib/uap10.0.16299/System.Reactive.xml",
+        "system.reactive.5.0.0.nupkg.sha512",
+        "system.reactive.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net7.0": [
+      "System.Reactive >= 5.0.0"
+    ]
+  },
+  "packageFolders": {
+    "/nfs/ghome/live/rapela/.nuget/packages/": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "/tmp/rxtest/rxtest.csproj",
+      "projectName": "rxtest",
+      "projectPath": "/tmp/rxtest/rxtest.csproj",
+      "packagesPath": "/nfs/ghome/live/rapela/.nuget/packages/",
+      "outputPath": "/tmp/rxtest/obj/",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "/nfs/ghome/live/rapela/.nuget/NuGet/NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net7.0"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net7.0": {
+          "targetAlias": "net7.0",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net7.0": {
+        "targetAlias": "net7.0",
+        "dependencies": {
+          "System.Reactive": {
+            "target": "Package",
+            "version": "[5.0.0, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/7.0.203/RuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}
