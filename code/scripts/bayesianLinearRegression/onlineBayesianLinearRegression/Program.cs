@@ -28,9 +28,7 @@ a1 = load_res["a1"]
 sigma = load_res["sigma"]
 likelihood_precision_coef = (1.0/sigma)**2
 
-#%%
-# Estimate and plot posterior
-# ---------------------------
+// Estimate and plot posterior
 
 marker_true = "cross"
 size_true = 10
