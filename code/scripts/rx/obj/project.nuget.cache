@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "MiHJlxGfeVlwVXfIUvcbDg3NA+8V99LNxS7gKitOYOcq2v/14mPhXpW4emIc8riHxG+sUfM9fiSjQSlUoSBa7A==",
+  "dgSpecHash": "7WUf9ij/OcSDtbng68NpCtYedQc3xEAsFdf+qScayJJOXWfI83FrPeYkuCk9wR786Dp5YG+dYGmGFVKlui3m2Q==",
   "success": true,
-  "projectFilePath": "/tmp/rxtest/rxtest.csproj",
+  "projectFilePath": "/home/rapela/dev/work/ucl/gatsby-swc/bbsrc23Project/repositories/learningCSharp/code/scripts/rx/rxtest.csproj",
   "expectedPackageFiles": [
-    "/nfs/ghome/live/rapela/.nuget/packages/system.reactive/5.0.0/system.reactive.5.0.0.nupkg.sha512"
+    "/home/rapela/.nuget/packages/system.reactive/5.0.0/system.reactive.5.0.0.nupkg.sha512"
   ],
   "logs": []
 }

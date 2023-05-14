@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/tmp/rxtest/rxtest.csproj": {}
+    "/home/rapela/dev/work/ucl/gatsby-swc/bbsrc23Project/repositories/learningCSharp/code/scripts/rx/rxtest.csproj": {}
   },
   "projects": {
-    "/tmp/rxtest/rxtest.csproj": {
+    "/home/rapela/dev/work/ucl/gatsby-swc/bbsrc23Project/repositories/learningCSharp/code/scripts/rx/rxtest.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/tmp/rxtest/rxtest.csproj",
+        "projectUniqueName": "/home/rapela/dev/work/ucl/gatsby-swc/bbsrc23Project/repositories/learningCSharp/code/scripts/rx/rxtest.csproj",
         "projectName": "rxtest",
-        "projectPath": "/tmp/rxtest/rxtest.csproj",
-        "packagesPath": "/nfs/ghome/live/rapela/.nuget/packages/",
-        "outputPath": "/tmp/rxtest/obj/",
+        "projectPath": "/home/rapela/dev/work/ucl/gatsby-swc/bbsrc23Project/repositories/learningCSharp/code/scripts/rx/rxtest.csproj",
+        "packagesPath": "/home/rapela/.nuget/packages/",
+        "outputPath": "/home/rapela/dev/work/ucl/gatsby-swc/bbsrc23Project/repositories/learningCSharp/code/scripts/rx/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/nfs/ghome/live/rapela/.nuget/NuGet/NuGet.Config"
+          "/home/rapela/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net7.0"

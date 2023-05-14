@@ -8,4 +8,4 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = rxtest
-build_property.ProjectDir = /tmp/rxtest/
+build_property.ProjectDir = /home/rapela/dev/work/ucl/gatsby-swc/bbsrc23Project/repositories/learningCSharp/code/scripts/rx/
