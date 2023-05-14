@@ -24,10 +24,30 @@ Vector<double> epsilon = CreateVector.Random<double>(y.Count, new Normal(0, sigm
 
 Vector<double> t = y + epsilon;
 
-Matrix<double> x_m = x.ToColumnMatrix();
-Matrix<double> y_m = y.ToColumnMatrix();
-Matrix<double> t_m = t.ToColumnMatrix();
+[Serializable]
+class Result
+{
+    Vector<double> x;
+    Vector<double> y;
+    Vector<double> t;
+    double a0;
+    double a1;
+    double sigma;
+}
+
+Result result = new Result();
+result.x = x;
+result.y = y;
+result.t = t;
+result.a0 = a0;
+result.a1 = a1;
+result.sigma = sigma;
+
 string data_filename = String.Format(data_filename_pattern, n_samples);
-MatlabWriter.Write<double>(data_filename, new[] { x_m, y_m, t_m }, new[] { "x", "y", "t" });
+File f = new File(data_filename);
+Stream s = f.Open(FileMode.Create);
+BinaryFormatter b = new BinaryFormatter();
+b.Serialize(s, result);
+s.Close();
 
 Console.WriteLine("Done");
