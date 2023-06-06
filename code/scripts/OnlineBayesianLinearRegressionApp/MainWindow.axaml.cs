@@ -1,7 +1,9 @@
 using ScottPlot;
+using ScottPlot.Plottable;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
+using System.Threading;
 using System.Drawing;
 using System.IO;
 using System.Xml;
@@ -17,6 +19,13 @@ namespace OnlineBayesianLinearRegressionApp;
 
 public partial class MainWindow : Avalonia.Controls.Window
 {
+    private static Button _button;
+    private static Plot _plt;
+    private static Heatmap _hm;
+    private static double[,] _buffer;
+    private static double[] _x;
+    private static double[] _y;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -25,25 +34,50 @@ public partial class MainWindow : Avalonia.Controls.Window
     public void button_Click(object sender, RoutedEventArgs e)
     {
         // Change button text when button is clicked.
-        var button = (Button)sender;
-        if (button.Content.Equals("Run"))
+        _button = (Button)sender;
+        if (_button.Content.Equals("Run"))
         {
-            button.Content = "Running ...";
-            runOnlineBayesianLinearRegression();
-            button.Content = "Done";
+            _button.Content = "Running ...";
+            _x = MathNet.Numerics.Generate.LinearRange(-1.0, 0.01, 1.0);
+            _y = MathNet.Numerics.Generate.LinearRange(-1.0, 0.01, 1.0);
+            _buffer = new double[_x.Length, _y.Length];
+
+            _plt = new ScottPlot.Plot(400, 400);
+            _hm = _plt.AddHeatmap(_buffer, lockScales: false);
+            _hm.FlipVertically = true;
+            _hm.XMin = -1.0;
+            _hm.XMax = 1.0;
+            _hm.YMin = -1.0;
+            _hm.YMax = 1.0;
+            var window = new ScottPlot.Avalonia.AvaPlotViewer(_plt);
+            window.Show();
+            // plt.Render();
+
+            Thread t = new Thread(new ThreadStart(runOnlineBayesianLinearRegression));
+            t.Start();
         }
-        else if (button.Content.Equals("Done"))
+        else if (_button.Content.Equals("Done"))
         {
             Environment.Exit(0);
         }
         else
         {
-            string msg = String.Format("button.Content is {0}", button.Content);
+            string msg = String.Format("Invalid button.Content: {0}", _button.Content);
             throw new InvalidOperationException(msg);
         }
     }
 
-    private void runOnlineBayesianLinearRegression()
+    public static void update_window() {
+        _hm.Update(_buffer);
+        // _plt.Render();
+    }
+
+    public static void set_done() {
+        _button.Content = "Done";
+        // _plt.Render();
+    }
+
+    private static void runOnlineBayesianLinearRegression()
     {
         Console.WriteLine("Running online Bayesian linear regression");
 
@@ -66,6 +100,8 @@ public partial class MainWindow : Avalonia.Controls.Window
 
         Console.WriteLine(String.Format("a0={0}, a1={1}, sigma={2}", a0, a1, sigma));
 
+        _plt.AddPoint(a0, a1, Color.Red, 10);
+
         Matrix<double> Phi = Matrix<double>.Build.Dense(n_samples, 1, (i,j) => 1.0);
         Phi = Phi.Append(independent_var.ToColumnMatrix());
         double alpha = prior_precision_coef;
@@ -79,23 +115,8 @@ public partial class MainWindow : Avalonia.Controls.Window
         Vector<double> mn = m0;
         Matrix<double> Sn = S0;
 
-        double[] xGrid = MathNet.Numerics.Generate.LinearRange(-1.0, 0.01, 1.0);
-        double[] yGrid = MathNet.Numerics.Generate.LinearRange(-1.0, 0.01, 1.0);
-        double[,] buffer = new double[xGrid.Length, yGrid.Length];
-
-        computeMultivariateGaussianPDForGrid(xGrid, yGrid, buffer, mn, Sn);
-        var plt = new ScottPlot.Plot(400, 400);
-        var hm = plt.AddHeatmap(buffer, lockScales: false);
-        hm.FlipVertically = true;
-        hm.XMin = -1.0;
-        hm.XMax = 1.0;
-        hm.YMin = -1.0;
-        hm.YMax = 1.0;
-        plt.AddPoint(a0, a1, Color.Red, 10);
-        var window = new ScottPlot.Avalonia.AvaPlotViewer(plt);
-        window.Show();
-        // plt.Render();
-
+        computeMultivariateGaussianPDForGrid(_buffer, mn, Sn);
+        update_window();
         for (int n = 0; n < n_samples; n++) 
         {
             Console.WriteLine("Continue (y/n)?");
@@ -118,23 +139,22 @@ public partial class MainWindow : Avalonia.Controls.Window
             Sn = res.cov;
             Console.WriteLine(mn.ToString());
             Console.WriteLine(Sn.ToString());
-            computeMultivariateGaussianPDForGrid(xGrid, yGrid, buffer, mn, Sn);
-            hm.Update(buffer);
-            // window.Show();
-            plt.Render();
+            computeMultivariateGaussianPDForGrid(_buffer, mn, Sn);
+            update_window();
         }
+        set_done();
     }
 
-    private void computeMultivariateGaussianPDForGrid(double[] x, double[] y, double[,] buffer, Vector<double> mn, Matrix<double> Sn)
+    private static void computeMultivariateGaussianPDForGrid(double[,] buffer, Vector<double> mn, Matrix<double> Sn)
     {
         double[] eval_loc_buffer = new double[2];
         MatrixNormal matrixNormal = new MatrixNormal(mn.ToColumnMatrix(), Sn, Matrix<double>.Build.DenseIdentity(1));
-        for (int i = 0; i < x.Length; i++)
+        for (int i = 0; i < _x.Length; i++)
         {
-            eval_loc_buffer[0] = x[i];
-            for (int j = 0; j < y.Length; j++)
+            eval_loc_buffer[0] = _x[i];
+            for (int j = 0; j < _y.Length; j++)
             {
-                eval_loc_buffer[1] = y[j];
+                eval_loc_buffer[1] = _y[j];
                 Vector<double> eval_loc = Vector<double>.Build.Dense(eval_loc_buffer);
                 buffer[j, i] = matrixNormal.Density(eval_loc.ToColumnMatrix());
             }
