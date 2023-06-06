@@ -49,7 +49,7 @@ public partial class MainWindow : Avalonia.Controls.Window
 
         int n_samples = 20;
         double prior_precision_coef = 2.0;
-        string data_filename_pattern = "../../../data/linearRegression_nSamples{0:D2}.xml";
+        string data_filename_pattern = "../data/linearRegression_nSamples{0:D2}.xml";
 
         string data_filename = String.Format(data_filename_pattern, n_samples);
 
