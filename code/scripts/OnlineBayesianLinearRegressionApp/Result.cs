@@ -1,5 +1,4 @@
 using System;
-using MathNet.Numerics.LinearAlgebra;
 
 [Serializable]
 public class Result
