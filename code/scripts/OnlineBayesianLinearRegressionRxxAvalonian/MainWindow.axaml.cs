@@ -52,10 +52,9 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
 
         _data_source = new RegressionObservationsDataSource(a0=a0, a1=a1, sigma=sigma);
 
-        double[] aux = {0.0, -0.0};
+        double[] aux = {0.0, 0.0};
         Vector<double> m0 = Vector<double>.Build.DenseOfArray(aux);
         Matrix<double> S0 = 1.0 / prior_precision_coef * Matrix<double>.Build.DenseIdentity(2);
-
         OnlineBayesianLinearRegression oblr = new OnlineBayesianLinearRegression(prior_precision_coef, likelihood_precision_coef, m0, S0);
 
         _data_source.Subscribe(oblr);
