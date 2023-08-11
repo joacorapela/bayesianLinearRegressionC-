@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using MathNet.Numerics.LinearAlgebra;
+using System.Xml.Serialization;
+using System.Globalization;
 
 namespace JoacoRapela.Statistics
 {
@@ -13,15 +15,25 @@ namespace JoacoRapela.Statistics
     [WorkflowElementCategory(ElementCategory.Transform)]
     public class BayesianLinearRegression
     {
-        [TypeConverter(typeof(UnidimensionalArrayConverter))]
-        public double[] M0 { get; set; }
-
-        [TypeConverter(typeof(MultidimensionalArrayConverter))]
-        public double[,] S0 { get; set; }
-
         public double Alpha { get; set; }
 
         public double Beta { get; set; }
+
+        [TypeConverter(typeof(UnidimensionalArrayConverter))]
+        public double[] M0 { get; set; }
+
+        [XmlIgnore]
+        [TypeConverter(typeof(MultidimensionalArrayConverter))]
+        public double[,] S0 { get; set; }
+
+        [Browsable(false)]
+        [XmlElement(nameof(S0))]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public string KernelXml
+        {
+            get { return ArrayConvert.ToString(S0, CultureInfo.InvariantCulture); }
+            set { S0 = (double[,])ArrayConvert.ToArray(value, 2, typeof(double), CultureInfo.InvariantCulture); }
+        }
 
         public static (Vector<double> mean, Matrix<double> cov) OnlineUpdate(Vector<double> mn, Matrix<double> Sn, Vector<double> phi, double y, double alpha, double beta)
         {
