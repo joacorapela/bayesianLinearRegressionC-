@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.8.0"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:wie="clr-namespace:Bonsai.Windows.Input;assembly=Bonsai.Windows.Input"
+                 xmlns:p1="clr-namespace:JoacoRapela.Statistics;assembly=JoacoRapela.Statistics"
+                 xmlns:viz="clr-namespace:Bonsai.Design.Visualizers;assembly=Bonsai.Design.Visualizers"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Nodes>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="wie:MouseMove" />
+      </Expression>
+      <Expression xsi:type="InputMapping">
+        <PropertyMappings />
+        <Selector>X,Y</Selector>
+        <TypeMapping xsi:type="TypeMapping" TypeArguments="p1:RegressionObservation" />
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="p1:BayesianLinearRegression">
+          <p1:Alpha>2</p1:Alpha>
+          <p1:Beta>10</p1:Beta>
+          <p1:M0>
+            <p1:double>0</p1:double>
+            <p1:double>0</p1:double>
+          </p1:M0>
+          <p1:S0>0.1,0;0,0.1</p1:S0>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>mn</Selector>
+      </Expression>
+      <Expression xsi:type="viz:RollingGraphBuilder">
+        <viz:ValueSelector>it[0],it[1]</viz:ValueSelector>
+        <viz:SymbolType>None</viz:SymbolType>
+        <viz:LineWidth>1</viz:LineWidth>
+        <viz:Capacity xsi:nil="true" />
+        <viz:Min xsi:nil="true" />
+        <viz:Max xsi:nil="true" />
+      </Expression>
+      <Expression xsi:type="MemberSelector">
+        <Selector>Sn</Selector>
+      </Expression>
+    </Nodes>
+    <Edges>
+      <Edge From="0" To="1" Label="Source1" />
+      <Edge From="1" To="2" Label="Source1" />
+      <Edge From="2" To="3" Label="Source1" />
+      <Edge From="2" To="5" Label="Source1" />
+      <Edge From="3" To="4" Label="Source1" />
+    </Edges>
+  </Workflow>
+</WorkflowBuilder>
