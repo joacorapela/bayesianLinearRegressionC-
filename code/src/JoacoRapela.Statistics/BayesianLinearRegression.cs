@@ -13,9 +13,11 @@ namespace JoacoRapela.Statistics
     [WorkflowElementCategory(ElementCategory.Transform)]
     public class BayesianLinearRegression
     {
-        public Vector<double> M0 { get; set; }
+        [TypeConverter(typeof(UnidimensionalArrayConverter))]
+        public double[] M0 { get; set; }
 
-        public Matrix<double> S0 { get; set; }
+        [TypeConverter(typeof(MultidimensionalArrayConverter))]
+        public double[,] S0 { get; set; }
 
         public double Alpha { get; set; }
 
@@ -36,8 +38,8 @@ namespace JoacoRapela.Statistics
         {
             return Observable.Defer(() =>
             {
-                Vector<double> mn = M0;
-                Matrix<double> Sn = S0;
+                Vector<double> mn = Vector<double>.Build.DenseOfArray(M0);
+                Matrix<double> Sn = Matrix<double>.Build.DenseOfArray(S0);
                 double alpha = Alpha;
                 double beta = Beta;
                 return source.Select(observation =>
