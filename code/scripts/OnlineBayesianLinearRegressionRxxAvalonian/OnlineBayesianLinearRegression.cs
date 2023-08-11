@@ -9,16 +9,28 @@ public class OnlineBayesianLinearRegression : IObserver<RegressionObservation>, 
     private List<IObserver<PosteriorDataItem>> _observers;
     // private Vector<double> _mn;
     // private Matrix<double> _Sn;
-    public Vector<double> mn;
-    public Matrix<double> Sn;
+    private Vector<double> _mn;
+    private Matrix<double> _Sn;
     private double _alpha;
     private double _beta;
+
+    public Vector<double> mn
+    {
+        get { return _mn; }
+        set { _mn = value; }
+    }
+
+    public Matrix<double> Sn
+    {
+        get { return _Sn; }
+        set { _Sn = value; }
+    }
 
     public OnlineBayesianLinearRegression(double alpha, double beta, Vector<double> m0, Matrix<double> S0)
     {
         _observers = new List<IObserver<PosteriorDataItem>>();
-        mn = m0;
-        Sn = S0;
+        _mn = m0;
+        _Sn = S0;
         _alpha = alpha;
         _beta = beta;
         Console.WriteLine("Constructor of OnlineBayesianLinearRegression called");
@@ -32,18 +44,6 @@ public class OnlineBayesianLinearRegression : IObserver<RegressionObservation>, 
 		return aDisposable;
     }
 
-    /*
-    public Vector<double> mn
-    {
-        get => _mn;
-    }
-
-    public Matrix<double> Sn
-    {
-        get => _Sn;
-    }
-    */
-
     public void OnNext(RegressionObservation observation)
     {
         Console.WriteLine("OnlineBayesianLinearRegression::OnNext called");
@@ -51,13 +51,13 @@ public class OnlineBayesianLinearRegression : IObserver<RegressionObservation>, 
         double t = observation.t;
         double[] aux = new[] {1, x};
         Vector<double> phi = Vector<double>.Build.DenseOfArray(aux);
-        var res = BayesianLinearRegression.OnlineUpdate(mn, Sn, phi, t, _alpha, _beta);
-        mn = res.mean;
-        Sn = res.cov;
+        var res = BayesianLinearRegression.OnlineUpdate(_mn, _Sn, phi, t, _alpha, _beta);
+        _mn = res.mean;
+        _Sn = res.cov;
         var pdi = new PosteriorDataItem();
         pdi.mn = mn;
         pdi.Sn = Sn;
-		foreach (IObserver<PosteriorDataItem> observer in this._observers)
+		foreach (IObserver<PosteriorDataItem> observer in _observers)
 		{
 			observer.OnNext(pdi);
 		}
