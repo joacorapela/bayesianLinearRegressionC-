@@ -1,7 +1,11 @@
 *~
+packages-microsoft-prod.deb
 
 obj/
 bin/
 data/
 old/
-packages-microsoft-prod.deb
+code/packages/
+code/scripts/bonsaiExercises/
+code/scripts/playground/
+code/scripts/playground2/
