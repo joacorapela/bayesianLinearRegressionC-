@@ -31,7 +31,7 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
         InitializeComponent();
 
         double sigma = 0.3;
-        double prior_precision_coef = 2.0;
+        double priorPrecision = 2.0;
 
         System.Random rng = SystemRandomSource.Default;
         double a0 = (2*rng.NextDouble()-1)*0.7;
@@ -48,14 +48,18 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
         _hm.YMin = -1.0;
         _hm.YMax = 1.0;
 
-        double likelihood_precision_coef = Math.Pow((1.0/sigma), 2);
+        double likePrecision = Math.Pow((1.0/sigma), 2);
 
         _dataSource = new RegressionObservationsDataSource(a0=a0, a1=a1, sigma=sigma);
 
         double[] aux = {0.0, 0.0};
         Vector<double> m0 = Vector<double>.Build.DenseOfArray(aux);
-        Matrix<double> S0 = 1.0 / prior_precision_coef * Matrix<double>.Build.DenseIdentity(2);
-        PosteriorCalculator postCalc = new PosteriorCalculator(prior_precision_coef, likelihood_precision_coef, m0, S0);
+        Matrix<double> S0 = 1.0 / priorPrecision * Matrix<double>.Build.DenseIdentity(2);
+        PosteriorCalculator postCalc = new PosteriorCalculator();
+        postCalc.priorPrecision = priorPrecision;
+        postCalc.likePrecision = likePrecision;
+        postCalc.m0 = m0;
+        postCalc.S0 = S0;
 
         IObservable<PosteriorDataItem> postSeq = postCalc.Process(_dataSource);
         postSeq.Subscribe(this);
