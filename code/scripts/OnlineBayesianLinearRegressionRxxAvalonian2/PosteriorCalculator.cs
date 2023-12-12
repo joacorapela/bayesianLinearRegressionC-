@@ -6,33 +6,28 @@ using MathNet.Numerics.LinearAlgebra;
 
 public class PosteriorCalculator
 {
-    private Vector<double> _m0;
-    private Matrix<double> _S0;
-    private double _priorPrecision;
-    private double _likePrecision;
-
-    public Vector<double> m0
+    public double[] m0
     {
-        get { return _m0; }
-        set { _m0 = value; }
+        get;
+        set;
     }
 
-    public Matrix<double> S0
+    public double[,] S0
     {
-        get { return _S0; }
-        set { _S0 = value; }
+        get;
+        set;
     }
 
     public double priorPrecision
     {
-        get { return _priorPrecision; }
-        set { _priorPrecision = value; }
+        get;
+        set;
     }
 
     public double likePrecision
     {
-        get { return _likePrecision; }
-        set { _likePrecision = value; }
+        get;
+        set;
     }
 
     public IObservable<PosteriorDataItem> Process(IObservable<RegressionObservation> source)
@@ -41,8 +36,8 @@ public class PosteriorCalculator
         return source.Scan(
             new PosteriorDataItem
             {
-                mn = m0,
-                Sn = S0
+                mn = Vector<double>.Build.DenseOfArray(m0),
+                Sn = Matrix<double>.Build.DenseOfArray(S0)
             },
             (prior, observation) => 
             {
