@@ -52,9 +52,10 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
 
         _dataSource = new RegressionObservationsDataSource(a0=a0, a1=a1, sigma=sigma);
 
-        double[] aux = {0.0, 0.0};
-        Vector<double> m0 = Vector<double>.Build.DenseOfArray(aux);
-        Matrix<double> S0 = 1.0 / priorPrecision * Matrix<double>.Build.DenseIdentity(2);
+        double[] m0 = {0.0, 0.0};
+        // Vector<double> m0 = Vector<double>.Build.DenseOfArray(aux);
+        // Matrix<double> S0 = 1.0 / priorPrecision * Matrix<double>.Build.DenseIdentity(2);
+        double[,] S0 = { {1.0, 0.0}, {0.0, 1.0} };
         PosteriorCalculator postCalc = new PosteriorCalculator();
         postCalc.priorPrecision = priorPrecision;
         postCalc.likePrecision = likePrecision;
@@ -95,7 +96,7 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
     public void OnNext(PosteriorDataItem data_item)
     {
         Console.WriteLine("MainWindow::OnNext called");
-        computeMultivariateGaussianPDForGrid(_buffer, data_item.mn, data_item.Sn);
+        computeMultivariateGaussianPDForGrid(_buffer, data_item.mn.ToArray(), data_item.Sn.ToArray());
         _hm.Update(_buffer);
     }
 
@@ -108,10 +109,12 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
     {
     }
 
-    private static void computeMultivariateGaussianPDForGrid(double[,] buffer, Vector<double> mn, Matrix<double> Sn)
+    private static void computeMultivariateGaussianPDForGrid(double[,] buffer, double[] mn, double[,] Sn)
     {
+        Vector<double> mnVec = Vector<double>.Build.DenseOfArray(mn);
+        Matrix<double> SnMat = Matrix<double>.Build.DenseOfArray(Sn);
         double[] eval_loc_buffer = new double[2];
-        MatrixNormal matrixNormal = new MatrixNormal(mn.ToColumnMatrix(), Sn, Matrix<double>.Build.DenseIdentity(1));
+        MatrixNormal matrixNormal = new MatrixNormal(mnVec.ToColumnMatrix(), SnMat, Matrix<double>.Build.DenseIdentity(1));
         for (int i = 0; i < _x.Length; i++)
         {
             eval_loc_buffer[0] = _x[i];
