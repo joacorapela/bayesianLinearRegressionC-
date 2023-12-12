@@ -6,49 +6,52 @@ using MathNet.Numerics.LinearAlgebra;
 
 public class PosteriorCalculator
 {
-    private Vector<double> _mn;
-    private Matrix<double> _Sn;
-    private double _alpha;
-    private double _beta;
+    private Vector<double> _m0;
+    private Matrix<double> _S0;
+    private double _priorPrecision;
+    private double _likePrecision;
 
-    public Vector<double> mn
+    public Vector<double> m0
     {
-        get { return _mn; }
-        set { _mn = value; }
+        get { return _m0; }
+        set { _m0 = value; }
     }
 
-    public Matrix<double> Sn
+    public Matrix<double> S0
     {
-        get { return _Sn; }
-        set { _Sn = value; }
+        get { return _S0; }
+        set { _S0 = value; }
     }
 
-    public PosteriorCalculator(double alpha, double beta, Vector<double> m0, Matrix<double> S0)
+    public double priorPrecision
     {
-        _mn = m0;
-        _Sn = S0;
-        _alpha = alpha;
-        _beta = beta;
-        Console.WriteLine("Constructor of PosteriorCalculator called");
+        get { return _priorPrecision; }
+        set { _priorPrecision = value; }
+    }
+
+    public double likePrecision
+    {
+        get { return _likePrecision; }
+        set { _likePrecision = value; }
     }
 
     public IObservable<PosteriorDataItem> Process(IObservable<RegressionObservation> source)
     {
         Console.WriteLine("PosteriorCalculator Process called");
-        return source.Select(observation =>
-        {
-            Console.WriteLine("new posterior calculated");
-            double x = observation.x;
-            double t = observation.t;
-            double[] aux = new[] {1, x};
-            Vector<double> phi = Vector<double>.Build.DenseOfArray(aux);
-            var res = BayesianLinearRegression.OnlineUpdate(_mn, _Sn, phi, t, _alpha, _beta);
-            mn = res.mean;
-            Sn = res.cov;
-            var pdi = new PosteriorDataItem();
-            pdi.mn = mn;
-            pdi.Sn = Sn;
-            return pdi;
-        });
+        return source.Scan(
+            new PosteriorDataItem
+            {
+                mn = m0,
+                Sn = S0
+            },
+            (prior, observation) => 
+            {
+                double[] aux = new[] { 1, observation.x };
+                Vector<double> phi = Vector<double>.Build.DenseOfArray(aux);
+                var post = BayesianLinearRegression.OnlineUpdate(prior.mn, prior.Sn, phi, observation.t, priorPrecision, likePrecision);
+                PosteriorDataItem pdi = new PosteriorDataItem { mn = post.mean, Sn = post.cov };
+                return pdi;
+            });
+
     }
 }
