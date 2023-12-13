@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using MathNet.Numerics.LinearAlgebra;
 using System.Xml.Serialization;
 using System.Globalization;
+using MathNet.Numerics.Distributions;
 
 namespace JoacoRapela.Statistics
 {
@@ -50,19 +51,33 @@ namespace JoacoRapela.Statistics
         {
             return Observable.Defer(() =>
             {
-                Vector<double> mn = Vector<double>.Build.DenseOfArray(M0);
-                Matrix<double> Sn = Matrix<double>.Build.DenseOfArray(S0);
                 double alpha = Alpha;
                 double beta = Beta;
-                return source.Select(observation =>
-                {
-                    double x = observation.x;
-                    double t = observation.t;
-                    double[] aux = new[] {1, x};
-                    Vector<double> phi = Vector<double>.Build.DenseOfArray(aux);
-                    (mn, Sn) = BayesianLinearRegression.OnlineUpdate(mn, Sn, phi, t, alpha, beta);
-                    return new PosteriorDataItem { mn = mn, Sn = Sn };
-                });
+                return source.Scan(
+                    new PosteriorDataItem
+                    {
+                        mn = Vector<double>.Build.DenseOfArray(M0),
+                        Sn = Matrix<double>.Build.DenseOfArray(S0)
+                    },
+                    (prior, observation) =>
+                    {
+                        var x = observation.x;
+                        var t = observation.t;
+                        var aux = new[] { 1, x };
+                        var phi = Vector<double>.Build.DenseOfArray(aux);
+                        var post = OnlineUpdate(prior.mn, prior.Sn, phi, t, alpha, beta);
+                        return new PosteriorDataItem { mn = post.mean, Sn = post.cov };
+                    });
+
+                //return source.Select(observation =>
+                //{
+                //    double x = observation.x;
+                //    double t = observation.t;
+                //    double[] aux = new[] {1, x};
+                //    Vector<double> phi = Vector<double>.Build.DenseOfArray(aux);
+                //    (mn, Sn) = BayesianLinearRegression.OnlineUpdate(mn, Sn, phi, t, alpha, beta);
+                //    return new PosteriorDataItem { mn = mn, Sn = Sn };
+                //});
             });
         }
     }
