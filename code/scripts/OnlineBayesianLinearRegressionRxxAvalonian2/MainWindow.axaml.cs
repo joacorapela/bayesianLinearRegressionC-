@@ -21,7 +21,6 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
 {
     private static Heatmap _hm;
 
-    private static RegressionObservationsDataSource _dataSource;
     private static double[,] _buffer;
     private static double[] _x;
     private static double[] _y;
@@ -31,6 +30,7 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
         InitializeComponent();
 
         double sigma = 0.3;
+        double srate = 1.0;
         double priorPrecision = 2.0;
 
         System.Random rng = SystemRandomSource.Default;
@@ -50,38 +50,38 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
 
         double likePrecision = Math.Pow((1.0/sigma), 2);
 
-        _dataSource = new RegressionObservationsDataSource(a0=a0, a1=a1, sigma=sigma);
+        RegressionObservationsDataSource dataSource = new RegressionObservationsDataSource();
+        dataSource.a0 = a0;
+        dataSource.a1 = a1;
+        dataSource.sigma = sigma;
+        dataSource.srate = srate;
 
         double[] m0 = {0.0, 0.0};
         // Vector<double> m0 = Vector<double>.Build.DenseOfArray(aux);
         // Matrix<double> S0 = 1.0 / priorPrecision * Matrix<double>.Build.DenseIdentity(2);
         double[,] S0 = { {1.0, 0.0}, {0.0, 1.0} };
+        plt.AddPoint(a0, a1, Color.Red, 10);
+        computeMultivariateGaussianPDForGrid(_buffer, m0, S0);
+        _hm.Update(_buffer);
+        var window = new ScottPlot.Avalonia.AvaPlotViewer(plt);
+        window.Show();
+
         PosteriorCalculator postCalc = new PosteriorCalculator();
         postCalc.priorPrecision = priorPrecision;
         postCalc.likePrecision = likePrecision;
         postCalc.m0 = m0;
         postCalc.S0 = S0;
 
-        IObservable<PosteriorDataItem> postSeq = postCalc.Process(_dataSource);
+        IObservable<PosteriorDataItem> postSeq = postCalc.Process(dataSource);
         postSeq.Subscribe(this);
 
-        plt.AddPoint(a0, a1, Color.Red, 10);
-        computeMultivariateGaussianPDForGrid(_buffer, m0, S0);
-        _hm.Update(_buffer);
-        var window = new ScottPlot.Avalonia.AvaPlotViewer(plt);
-        window.Show();
     }
 
     public void button_Click(object sender, RoutedEventArgs e)
     {
         // Change button text when button is clicked.
         Button button = (Button)sender;
-        if (button.Content.Equals("Publish Observation"))
-        {
-            Console.WriteLine("Button Publish Observation pressed");
-            _dataSource.PublishNextObservation();
-        }
-        else if (button.Content.Equals("Exit"))
+        if (button.Content.Equals("Exit"))
         {
             Console.WriteLine("Button Exit pressed");
             Environment.Exit(0);
