@@ -2,13 +2,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="50"
         x:Class="OnlineBayesianLinearRegressionRxxWithGUI.MainWindow"
         xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
         Title="OnlineBayesianLinearRegressionRxxWithGUI">
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-        <!-- Add button to window -->
-        <Button Name="buttonPublishObs" Click="button_Click">Publish Observation</Button>
         <!-- Add button to window -->
         <Button Name="buttonExit" Click="button_Click">Exit</Button>
     </StackPanel>
