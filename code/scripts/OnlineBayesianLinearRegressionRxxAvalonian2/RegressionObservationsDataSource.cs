@@ -3,39 +3,52 @@ using System.Reactive;
 using System.Collections.Generic;
 using MathNet.Numerics.Random;
 using MathNet.Numerics.Distributions;
+using System.Threading;
+using static System.Threading.Thread;
 
 public class RegressionObservationsDataSource: IObservable<RegressionObservation>
 {
     private List<IObserver<RegressionObservation>> _observers;
-	double _a0;
-	double _a1;
-    double _sigma;
+	public double a0 { get; set; }
+	public double a1 { get; set; }
+	public double sigma { get; set; }
+	public double srate { get; set; }
 
-    public bool done
-    {
-        get
-        {
-            // Console.WriteLine(String.Format("_x.Length{0:D2}, _t.Length={1:D2}, _index={2:D2}", _x.Length, _t.Length, _index));
-            return false;
-        }
-    }
-
-    public RegressionObservationsDataSource(double a0, double a1, double sigma)
+    public RegressionObservationsDataSource()
     {
         Console.WriteLine("Constructor of RegressionObservationsDataSource called");
         _observers = new List<IObserver<RegressionObservation>>();
-
-		this._a0 = a0;
-		this._a1 = a1;
-		this._sigma = sigma;
     }
 
     public IDisposable Subscribe(IObserver<RegressionObservation> observer)
     {
         Console.WriteLine("RegressionObservationsDataSource::Subscribe called");
         _observers.Add(observer);
-		IDisposable aDisposable = new RegressionObservationODisposable(observer, _observers);
-		return aDisposable;
+		RegressionObservationODisposable disposable = new RegressionObservationODisposable(observer, _observers);
+        var thread = new Thread(() => PublishObservations(observer, disposable));
+        thread.Start();
+		return disposable;
+    }
+
+    public void PublishObservations(IObserver<RegressionObservation> observer, RegressionObservationODisposable disposable)
+    {
+        System.Random rng = SystemRandomSource.Default;
+        while (!disposable.isDisposed())
+        {
+            double x = rng.NextDouble();
+            double epsilon = Normal.Sample(0.0, this.sigma);
+            double y = this.a0 + this.a1 * x;
+            double t = y + epsilon;
+
+		    RegressionObservation observation = new RegressionObservation();
+            observation.x = x;
+            observation.t = t;
+			observer.OnNext(observation);
+            Console.WriteLine("RegressionObservationsDataSource observation published");
+
+            Sleep(TimeSpan.FromSeconds(1.0/this.srate));
+			observer.OnNext(observation);
+        }
     }
 
 	public void PublishNextObservation()
@@ -43,8 +56,8 @@ public class RegressionObservationsDataSource: IObservable<RegressionObservation
         Console.WriteLine("RegressionObservationsDataSource::PublishNextObservation called");
         System.Random rng = SystemRandomSource.Default;
         double x = rng.NextDouble();
-        double epsilon = Normal.Sample(0.0, this._sigma);
-        double y = this._a0 + this._a1 * x;
+        double epsilon = Normal.Sample(0.0, this.sigma);
+        double y = this.a0 + this.a1 * x;
         double t = y + epsilon;
 
 		RegressionObservation observation = new RegressionObservation();
@@ -68,6 +81,7 @@ public class RegressionObservationODisposable : IDisposable
     {
         _observer = observer;
         _observers = observers;
+        _disposed = false;
     }
 
     public void Dispose()
@@ -77,5 +91,10 @@ public class RegressionObservationODisposable : IDisposable
             _observers.Remove(_observer);
             _disposed = true;
         }
+    }
+
+    public bool isDisposed()
+    {
+            return _disposed;
     }
 }
