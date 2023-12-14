@@ -41,6 +41,7 @@ public class PosteriorCalculator
             },
             (prior, observation) => 
             {
+                Console.WriteLine("PosteriorCalculator generating a new PosteriorDataItem");
                 double[] aux = new[] { 1, observation.x };
                 Vector<double> phi = Vector<double>.Build.DenseOfArray(aux);
                 var post = BayesianLinearRegression.OnlineUpdate(prior.mn, prior.Sn, phi, observation.t, priorPrecision, likePrecision);
