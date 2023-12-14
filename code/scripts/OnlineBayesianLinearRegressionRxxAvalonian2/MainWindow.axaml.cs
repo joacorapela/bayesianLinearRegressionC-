@@ -3,6 +3,7 @@ using ScottPlot.Plottable;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Drawing;
 using System.IO;
@@ -30,7 +31,6 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
         InitializeComponent();
 
         double sigma = 0.3;
-        double srate = 1.0;
         double priorPrecision = 2.0;
 
         System.Random rng = SystemRandomSource.Default;
@@ -50,11 +50,16 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
 
         double likePrecision = Math.Pow((1.0/sigma), 2);
 
+        double timeStartTimeSecs = 0.0;
+        double timerPeriodSecs = 1.0;
+        var timer = Observable.Timer(TimeSpan.FromSeconds(timeStartTimeSecs), TimeSpan.FromSeconds(timerPeriodSecs));
+
         RegressionObservationsDataSource dataSource = new RegressionObservationsDataSource();
         dataSource.a0 = a0;
         dataSource.a1 = a1;
         dataSource.sigma = sigma;
-        dataSource.srate = srate;
+
+        IObservable<RegressionObservation> regressionObservations = dataSource.Process(timer);
 
         double[] m0 = {0.0, 0.0};
         // Vector<double> m0 = Vector<double>.Build.DenseOfArray(aux);
@@ -72,7 +77,7 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
         postCalc.m0 = m0;
         postCalc.S0 = S0;
 
-        IObservable<PosteriorDataItem> postSeq = postCalc.Process(dataSource);
+        IObservable<PosteriorDataItem> postSeq = postCalc.Process(regressionObservations);
         postSeq.Subscribe(this);
 
     }
