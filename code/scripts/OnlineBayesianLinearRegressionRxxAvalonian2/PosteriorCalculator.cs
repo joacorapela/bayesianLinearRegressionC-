@@ -39,7 +39,7 @@ public class PosteriorCalculator
                 mn = Vector<double>.Build.DenseOfArray(m0),
                 Sn = Matrix<double>.Build.DenseOfArray(S0)
             },
-            (prior, observation) => 
+            (prior, observation) =>
             {
                 Console.WriteLine("PosteriorCalculator generating a new PosteriorDataItem");
                 double[] aux = new[] { 1, observation.x };
