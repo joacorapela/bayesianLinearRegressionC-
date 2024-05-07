@@ -4,14 +4,8 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
 using System.Reactive.Linq;
-using System.Threading;
 using System.Drawing;
-using System.IO;
-using System.Xml;
-using System.Xml.Serialization;
-using MathNet.Numerics;
 using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.Distributions;
 using MathNet.Numerics.Random;
 
@@ -21,7 +15,6 @@ namespace OnlineBayesianLinearRegressionRxxWithGUI;
 public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorDataItem>
 {
     private static Heatmap _hm;
-
     private static double[,] _buffer;
     private static double[] _x;
     private static double[] _y;
@@ -42,6 +35,7 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
 
         Plot plt = new ScottPlot.Plot(400, 400);
         _hm = plt.AddHeatmap(_buffer, lockScales: false);
+        plt.Frameless();
         _hm.FlipVertically = true;
         _hm.XMin = -1.0;
         _hm.XMax = 1.0;
@@ -71,18 +65,19 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
         var window = new ScottPlot.Avalonia.AvaPlotViewer(plt);
         window.Show();
 
-        PosteriorCalculator postCalc = new PosteriorCalculator();
-        postCalc.priorPrecision = priorPrecision;
-        postCalc.likePrecision = likePrecision;
-        postCalc.m0 = m0;
-        postCalc.S0 = S0;
 
-        IObservable<PosteriorDataItem> postSeq = postCalc.Process(regressionObservations);
+        IObservable<PosteriorDataItem> postSeq = new PosteriorCalculator()
+        {
+            priorPrecision = priorPrecision,
+            likePrecision = likePrecision,
+            m0 = m0,
+            S0 = S0
+        }.Process(regressionObservations);
         postSeq.Subscribe(this);
 
     }
 
-    public void button_Click(object sender, RoutedEventArgs e)
+    public void Button_Click(object sender, RoutedEventArgs e)
     {
         // Change button text when button is clicked.
         Button button = (Button)sender;
