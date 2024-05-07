@@ -8,6 +8,6 @@
         Title="OnlineBayesianLinearRegressionRxxWithGUI">
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
         <!-- Add button to window -->
-        <Button Name="buttonExit" Click="button_Click">Exit</Button>
+        <Button Name="buttonExit" Click="Button_Click">Exit</Button>
     </StackPanel>
 </Window>
