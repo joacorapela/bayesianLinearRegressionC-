@@ -65,7 +65,6 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
         var window = new ScottPlot.Avalonia.AvaPlotViewer(plt);
         window.Show();
 
-
         IObservable<PosteriorDataItem> postSeq = new PosteriorCalculator()
         {
             priorPrecision = priorPrecision,
@@ -74,7 +73,6 @@ public partial class MainWindow : Avalonia.Controls.Window, IObserver<PosteriorD
             S0 = S0
         }.Process(regressionObservations);
         postSeq.Subscribe(this);
-
     }
 
     public void Button_Click(object sender, RoutedEventArgs e)
