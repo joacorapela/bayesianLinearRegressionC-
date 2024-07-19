@@ -1,4 +1,3 @@
-using System;
 using MathNet.Numerics.LinearAlgebra;
 
 public class PosteriorDataItem
