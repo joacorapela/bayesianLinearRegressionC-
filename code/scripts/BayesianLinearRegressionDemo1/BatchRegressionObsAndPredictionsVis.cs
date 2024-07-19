@@ -9,7 +9,6 @@ using ScottPlot.Drawing;
 using System.Drawing;
 using System.Linq;
 
-//public class BatchRegressionObsAndPredictionsVis : IObserver<BatchRegressionObsAndPosterior>
 public class BatchRegressionObsAndPredictionsVis : IObserver<(IList<RegressionObservation> batchRObs, PosteriorDataItem pdi)>
 {
     public AvaPlot avaPlot1;
