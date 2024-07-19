@@ -95,13 +95,12 @@ public partial class MainWindow : Window
         // visualize predictions
         int visualizationBatchSize = 200;
         IObservable<IList<RegressionObservation>> batchRegressionObservationsO2 = regressionObservationsO.Buffer(visualizationBatchSize);
-        IObservable<BatchRegressionObsAndPosterior> batchROandPosteriorsO = batchRegressionObservationsO2.WithLatestFrom(posDataItemO,
+        // IObservable<Tuple(IList<RegressionObservation>, PosteriorDataItem)> batchROandPosteriorsO = batchRegressionObservationsO2.WithLatestFrom(posDataItemO,
+        var batchROandPosteriorsO = batchRegressionObservationsO2.WithLatestFrom(posDataItemO,
             (batchRObs, pdi) =>
             {
                 // Console.WriteLine($"CombineLatest called. Length batchRObs: {batchRObs.Count}");
-                var answer = new BatchRegressionObsAndPosterior();
-                answer.batchRObs= (System.Collections.Generic.List<RegressionObservation>) batchRObs;
-                answer.pdi = pdi;
+                (IList<RegressionObservation> batchRObs, PosteriorDataItem pdi) answer = ((System.Collections.Generic.List<RegressionObservation>) batchRObs, pdi);
                 return answer;
             });
         BatchRegressionObsAndPredictionsVis batchROandPredVis = new BatchRegressionObsAndPredictionsVis();

@@ -9,16 +9,17 @@ using ScottPlot.Drawing;
 using System.Drawing;
 using System.Linq;
 
-public class BatchRegressionObsAndPredictionsVis : IObserver<BatchRegressionObsAndPosterior>
+//public class BatchRegressionObsAndPredictionsVis : IObserver<BatchRegressionObsAndPosterior>
+public class BatchRegressionObsAndPredictionsVis : IObserver<(IList<RegressionObservation> batchRObs, PosteriorDataItem pdi)>
 {
     public AvaPlot avaPlot1;
     public List<Func<double, double>> basisFunctions;
     public double beta;
 
-    public void OnNext(BatchRegressionObsAndPosterior batchROandPos)
+    public void OnNext((IList<RegressionObservation> batchRObs, PosteriorDataItem pdi) batchROandPos)
     {
         Console.WriteLine("BatchRegressionObsAndPredictionsVis::OnNext called");
-        List<RegressionObservation> batchRObs = batchROandPos.batchRObs;
+        List<RegressionObservation> batchRObs = (System.Collections.Generic.List<RegressionObservation>) batchROandPos.batchRObs;
         PosteriorDataItem pdi = batchROandPos.pdi;
 
         // computer predictions
