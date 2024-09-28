@@ -1,5 +1,6 @@
 
 using System.Reactive.Linq;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using MathNet.Numerics.LinearAlgebra;
 
@@ -64,8 +65,8 @@ public partial class MainWindow : Window
         double likePrecision = Math.Pow((1.0/sigma), 2);
 
         // build regression observations
-        double[] tmp = CSVReader.ReadCSVToVector("data/gabor10x10.csv");
-		Vector<double> coefs = Vector<double>.Build.DenseOfArray(tmp);
+        double[] tmp = CSVReader.ReadCSVToVector(@"C:\Users\user1\bonsai\repos\bayesianLinearRegressionCSharp\code\scripts\BayesianLinearRegressionDemo2\data\gabor10x10.csv");
+        Vector<double> coefs = Vector<double>.Build.DenseOfArray(tmp);
 
         VisualCellResponsesDataSource vcrDs = new VisualCellResponsesDataSource(); // visual cell responses observable
         vcrDs.sigma = sigma;
@@ -90,11 +91,28 @@ public partial class MainWindow : Window
         var batchRegObsO = regObsO2.Buffer(visualizationBatchSize);
 
         // split buffer of regression observations into a list of stimuli and a list of responses
-        var batchPhisO = batchRegObsO.Select(listRegObs => listRegObs);
-        // var batchTsO = batchRegObsO.Select(batchRegObs => batchRegObs.Select(regObs => regObs.t));
+        IObservable<List<Vector<double>>> batchPhisO = batchRegObsO.Select(listRegObs => 
+        {
+            List<Vector<double>> phisList = new List<Vector<double>>();
+            foreach (RegressionObservation regObs in listRegObs)
+            {
+                phisList.Add(regObs.phi);
+            }
+            return phisList;
+        });
+        IObservable<List<double>> batchTsO = batchRegObsO.Select(listRegObs => 
+        {
+            List<double> tsList = new List<double>();
+            foreach (RegressionObservation regObs in listRegObs)
+            {
+                tsList.Add(regObs.t);
+            }
+            return tsList;
+        });
 
         // combine each batchPhisO with the latest posDataItem
-        // var batchPhisAndPostDataItemO = batchPhisO.WithLatestFrom(posDataItemO, (batchPhis, pdi) => (batchPhis, pdi));
+        IObservable<(List<Vector<double>>, PosteriorDataItem)> batchPhisAndPostDataItemO = batchPhisO.WithLatestFrom(posDataItemO, (batchPhis, pdi) => (batchPhis, pdi));
+        Console.WriteLine("Stop here");
         // BatchPredictionsCalculator bPredCalc = new BatchPredictionsCalculator();
         // bPredCal.beta = likePrecision;
         // var predictionsO = bPredCalc.Process(batchPhisAndPostDataItemO);
@@ -114,10 +132,10 @@ public partial class MainWindow : Window
         // coefsAndPostVis.window = coefsWin.Find<AvaPlot>("CoefsWindowAvaPlot");
         // posDataItemO.Subscribe(coefsAndPostVis);
 
-		// true and estimated RFs visualizer
-		// TrueAndEstimatedRFsVis trueAndEstRFsVis = new TrueAndEstimatedRFsVis();
-		// trueAndEstRFsVis.coefs = coefs.ToArray();
-		// trueAndEstRFsVis.window = rfsWin.Find<AvaPlot>("RFsWindowAvaPlot");
-		// posDataItemO.Subscribe(trueAndEstRFsVis);
+        // true and estimated RFs visualizer
+        // TrueAndEstimatedRFsVis trueAndEstRFsVis = new TrueAndEstimatedRFsVis();
+        // trueAndEstRFsVis.coefs = coefs.ToArray();
+        // trueAndEstRFsVis.window = rfsWin.Find<AvaPlot>("RFsWindowAvaPlot");
+        // posDataItemO.Subscribe(trueAndEstRFsVis);
     }
 }
