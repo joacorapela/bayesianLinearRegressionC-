@@ -1,20 +1,12 @@
 
-using System;
-using System.Collections.Generic;
 using System.Reactive.Linq;
-using System.IO;
 using Avalonia.Controls;
 using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Double;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using ScottPlot.Avalonia;
 
 namespace BayesianLinearRegressionDemo2;
 
 using System;
 using System.IO;
-using System.Collections.Generic;
 
 public class CSVReader
 {
@@ -61,24 +53,28 @@ public partial class MainWindow : Window
         rfsWin.Show();
 
         double timeStartTimeSecs = 0.0;
-        double timerPeriodSecs = 1.0;
-        IObservable<long> timer = Observable.Timer(TimeSpan.FromSeconds(timeStartTimeSecs), TimeSpan.FromSeconds(timerPeriodSecs));
+        double timer1PeriodSecs = 1.0;
+        double timer2PeriodSecs = 1.5;
+        IObservable<long> timer1 = Observable.Timer(TimeSpan.FromSeconds(timeStartTimeSecs), TimeSpan.FromSeconds(timer1PeriodSecs));
+        IObservable<long> timer2 = Observable.Timer(TimeSpan.FromSeconds(timeStartTimeSecs), TimeSpan.FromSeconds(timer2PeriodSecs));
 
         double sigma = 0.3;
         double priorPrecision = 2.0;
 
         double likePrecision = Math.Pow((1.0/sigma), 2);
 
-        // build single and batch observations data sources
+        // build regression observations
         double[] tmp = CSVReader.ReadCSVToVector("data/gabor10x10.csv");
 		Vector<double> coefs = Vector<double>.Build.DenseOfArray(tmp);
 
         VisualCellResponsesDataSource vcrDs = new VisualCellResponsesDataSource(); // visual cell responses observable
         vcrDs.sigma = sigma;
         vcrDs.coefs = coefs;
-        IObservable<RegressionObservation> regObsO = vcrDs.Process(timer);
 
-        // posterior calculator
+        IObservable<RegressionObservation> regObsO1 = vcrDs.Process(timer1);
+        IObservable<RegressionObservation> regObsO2 = vcrDs.Process(timer2);
+
+        // run online Bayesian linear regression
         double[] m0 = new double[coefs.Count];
 
         double[,] S0 = Matrix<double>.Build.DenseIdentity(coefs.Count).ToArray();
@@ -87,32 +83,41 @@ public partial class MainWindow : Window
         posteriorCalculator.likePrecision = likePrecision;
         posteriorCalculator.m0 = m0;
         posteriorCalculator.S0 = S0;
-        IObservable<PosteriorDataItem> posDataItemO = posteriorCalculator.Process(regObsO);
+        IObservable<PosteriorDataItem> posDataItemO = posteriorCalculator.Process(regObsO1);
 
-        // visualize predictions
-        int visualizationBatchSize = 200;
-        IObservable<IList<RegressionObservation>> bufferedRegObsO = regObsO.Buffer(visualizationBatchSize);
-        var batchVCRsAndPosteriorsO = bufferedRegObsO.WithLatestFrom(posDataItemO,
-            (bufferedRegObs, pdi) =>
-            {
-                (IList<RegressionObservation> bufferedRegObs, PosteriorDataItem pdi) answer = ((System.Collections.Generic.List<RegressionObservation>) bufferedRegObs, pdi);
-                return answer;
-            });
-        PredictionsVsResponsesVis predVsRespVis = new PredictionsVsResponsesVis();
-        predVsRespVis.beta = likePrecision;
-        predVsRespVis.avaPlot1 = this.Find<AvaPlot>("PredictionsAvaPlot");
-        batchVCRsAndPosteriorsO.Subscribe(predVsRespVis);
+        // buffer regression observations
+        int visualizationBatchSize = 20;
+        var batchRegObsO = regObsO2.Buffer(visualizationBatchSize);
+
+        // split buffer of regression observations into a list of stimuli and a list of responses
+        var batchPhisO = batchRegObsO.Select(listRegObs => listRegObs);
+        // var batchTsO = batchRegObsO.Select(batchRegObs => batchRegObs.Select(regObs => regObs.t));
+
+        // combine each batchPhisO with the latest posDataItem
+        // var batchPhisAndPostDataItemO = batchPhisO.WithLatestFrom(posDataItemO, (batchPhis, pdi) => (batchPhis, pdi));
+        // BatchPredictionsCalculator bPredCalc = new BatchPredictionsCalculator();
+        // bPredCal.beta = likePrecision;
+        // var predictionsO = bPredCalc.Process(batchPhisAndPostDataItemO);
+
+        // zip predictions with true responses
+        // var predAndTrueRespO = predictionsO.zip(tsO, (pred, t) => (pred, t));
+
+        // visualize predictions and resposes
+        // PredictionsVsResponsesVis predVsRespVis = new PredictionsVsResponsesVis();
+        // predVsRespVis.beta = likePrecision;
+        // predVsRespVis.avaPlot1 = this.Find<AvaPlot>("PredictionsAvaPlot");
+        // predAndTrueRespO.Subscribe(predVsRespVis);
 
         // visualize coefs
-        CoefsAndPosteriorVis coefsAndPostVis = new CoefsAndPosteriorVis();
-        coefsAndPostVis.coefs = coefs.ToArray();
-        coefsAndPostVis.window = coefsWin.Find<AvaPlot>("CoefsWindowAvaPlot");
-        posDataItemO.Subscribe(coefsAndPostVis);
+        // CoefsAndPosteriorVis coefsAndPostVis = new CoefsAndPosteriorVis();
+        // coefsAndPostVis.coefs = coefs.ToArray();
+        // coefsAndPostVis.window = coefsWin.Find<AvaPlot>("CoefsWindowAvaPlot");
+        // posDataItemO.Subscribe(coefsAndPostVis);
 
 		// true and estimated RFs visualizer
-		TrueAndEstimatedRFsVis trueAndEstRFsVis = new TrueAndEstimatedRFsVis();
-		trueAndEstRFsVis.coefs = coefs.ToArray();
-		trueAndEstRFsVis.window = rfsWin.Find<AvaPlot>("RFsWindowAvaPlot");
-		posDataItemO.Subscribe(trueAndEstRFsVis);
+		// TrueAndEstimatedRFsVis trueAndEstRFsVis = new TrueAndEstimatedRFsVis();
+		// trueAndEstRFsVis.coefs = coefs.ToArray();
+		// trueAndEstRFsVis.window = rfsWin.Find<AvaPlot>("RFsWindowAvaPlot");
+		// posDataItemO.Subscribe(trueAndEstRFsVis);
     }
 }
