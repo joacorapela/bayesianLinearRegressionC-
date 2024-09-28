@@ -7,6 +7,7 @@
 tmp
 
 # User-specific files
+*.swp
 *.rsuser
 *.suo
 *.user
