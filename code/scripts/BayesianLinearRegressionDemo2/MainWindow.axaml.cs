@@ -1,4 +1,6 @@
 
+using System;
+using System.IO;
 using System.Reactive.Linq;
 using System.Collections.Generic;
 using Avalonia.Controls;
@@ -7,8 +9,6 @@ using ScottPlot.Avalonia;
 
 namespace BayesianLinearRegressionDemo2;
 
-using System;
-using System.IO;
 
 public class CSVReader
 {
@@ -87,47 +87,29 @@ public partial class MainWindow : Window
         posteriorCalculator.S0 = S0;
         IObservable<PosteriorDataItem> posDataItemO = posteriorCalculator.Process(regObsO1);
 
-        // buffer regression observations
-        int visualizationBatchSize = 20;
-        var batchRegObsO = regObsO2.Buffer(visualizationBatchSize);
+        // combine each regObs2 with the latest posDataItem
+        IObservable<(RegressionObservation, PosteriorDataItem)> regObsAndPDIO = regObsO2.WithLatestFrom(posDataItemO, (regObs, pdi) => (regObs, pdi));
 
-        // split buffer of regression observations into a list of stimuli and a list of responses
-        IObservable<List<Vector<double>>> batchPhisO = batchRegObsO.Select(listRegObs =>
-            {
-                List<Vector<double>> phisList = new List<Vector<double>>();
-                foreach (RegressionObservation regObs in listRegObs)
-                {
-                    phisList.Add(regObs.phi);
-                }
-                return phisList;
-            });
-        IObservable<double[]> batchTsO = batchRegObsO.Select(listRegObs =>
-            {
-                double[] ts = new double[listRegObs.Count];
-                for (int i=0; i<listRegObs.Count; i++)
-                {
-                    RegressionObservation regObs = listRegObs[i];
-                    ts[i] = regObs.t;
-                }
-                return ts;
-            });
+        // select phis and pdis from regObsAndPDIO
+        // IObservable<(PosteriorDataItem, Vector<double>)> phisAndPDIsO = regObsAndPDIO.Select((regObs, pdi) => (regObs.phi, pdi));
+        var phisAndPDIsO = regObsAndPDIO.Select(regObsAndPDI => (regObsAndPDI.Item1.phi, regObsAndPDI.Item2));
 
-        // combine each batchPhisO with the latest posDataItem
-        IObservable<(List<Vector<double>>, PosteriorDataItem)> batchPhisAndPostDataItemO = batchPhisO.WithLatestFrom(posDataItemO, (batchPhis, pdi) => (batchPhis, pdi));
+        // select ts from regObsAndPDIO
+        IObservable<double> tsO = regObsAndPDIO.Select(regObsAndPDI => regObsAndPDI.Item1.t);
 
         // computer predictions
-        BatchPredictionsCalculator bPredCalc = new BatchPredictionsCalculator();
-        bPredCalc.beta = likePrecision;
-        IObservable<(double[], double[])> predictionsO = bPredCalc.Process(batchPhisAndPostDataItemO);
+        PredictionsCalculator predCalc = new PredictionsCalculator();
+        // IObservable<(double, double)> predictionsO = predCalc.Process(phisAndPDIsO);
+        var predictionsO = predCalc.Process(phisAndPDIsO);
 
         // zip predictions with true responses
-        IObservable<((double[], double[]), double[])>  predAndTrueRespO = predictionsO.Zip(batchTsO, (batchPreds, batchTs) => (batchPreds, batchTs));
-         Console.WriteLine("Stop here");
+        IObservable<((double, double), double)>  predAndTrueRespO = predictionsO.Zip(tsO, (pred, t) => (pred, t));
 
         // visualize predictions and resposes
         PredictionsVsResponsesVis predVsRespVis = new PredictionsVsResponsesVis();
-        predVsRespVis.avaPlot1 = this.Find<AvaPlot>("PredictionsAvaPlot");
-        predAndTrueRespO.Subscribe(predVsRespVis);
+        predVsRespVis.avaPlot = this.Find<AvaPlot>("PredictionsAvaPlot");
+	predVsRespVis.numPointsToSimDisplay = 20;
+        predVsRespVis.Process(predAndTrueRespO);
 
         // visualize coefs
         CoefsAndPosteriorVis coefsAndPostVis = new CoefsAndPosteriorVis();

@@ -10,39 +10,40 @@ using System.Drawing;
 using System.Linq;
 
 
-public class PredictionsVsResponsesVis : IObserver<((double[], double[]), double[])>
+public class PredictionsVsResponsesVis
 {
-    public AvaPlot avaPlot1;
-    public double beta;
+    private int _numPointsToSimDisplay;
+    private double[] _observations;
+    private double[] _predictions;
+    private ScottPlot.Plottable.ScatterPlot _scatterPlot;
 
-    public void OnNext(((double[], double[]), double[])  predictionsAndResponses)
+    public AvaPlot avaPlot;
+
+    public int numPointsToSimDisplay
     {
-        Console.WriteLine("PredictionsVsResponsesVis::OnNext called");
-        (double[], double[]) predictions = predictionsAndResponses.Item1;
-        double[] responses = predictionsAndResponses.Item2;
-
-        double[] means = predictions.Item1;
-
-        // plot means and 95% ci for xDense
-        avaPlot1.Plot.Clear();
-        avaPlot1.Plot.AddScatter(responses, means, Color.Blue, lineWidth: 0);
-        // avaPlot1.Plot.AddFillError(t, mean, ci95Width, Color.FromArgb(50, Color.Blue));
-
-        // plot data
-        avaPlot1.Plot.AddScatter(responses, responses, Color.Red, markerSize: 0);
-        avaPlot1.Plot.YLabel("Predictions");
-        avaPlot1.Plot.XLabel("Observations");
-
-        avaPlot1.Refresh();
+        set {
+                this._numPointsToSimDisplay = value;
+		this._observations = new double[this._numPointsToSimDisplay];
+		this._predictions = new double[this._numPointsToSimDisplay];
+		this._scatterPlot = this.avaPlot.Plot.AddScatter(this._observations, this._predictions);
+		this.avaPlot.Refresh();
+	}
+	get { return this._numPointsToSimDisplay; }
     }
 
-    public void OnError(Exception error)
-    {
-        throw error;
-    }
 
-    public void OnCompleted()
+    public IObservable<((double, double), double)> Process(IObservable<((double, double), double)> source)
     {
+        source.Subscribe(pair =>
+        {
+	    Array.Copy(this._observations, 1, this._observations, 0, this._observations.Length - 1);
+	    Array.Copy(this._predictions, 1, this._predictions, 0, this._predictions.Length - 1);
+	    this._observations[^1] = pair.Item1.Item1;
+	    this._predictions[^1] = pair.Item2;
+	    this._scatterPlot.Update(this._observations, this._predictions);
+	    this.avaPlot.Refresh();
+        });
+	return source;
     }
 
 }
