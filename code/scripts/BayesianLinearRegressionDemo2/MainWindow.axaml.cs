@@ -60,10 +60,10 @@ public partial class MainWindow : Window
         IObservable<long> timer1 = Observable.Timer(TimeSpan.FromSeconds(timeStartTimeSecs), TimeSpan.FromSeconds(timer1PeriodSecs));
         IObservable<long> timer2 = Observable.Timer(TimeSpan.FromSeconds(timeStartTimeSecs), TimeSpan.FromSeconds(timer2PeriodSecs));
 
-        double sigma = 0.3;
-        double priorPrecision = 2.0;
-
-        double likePrecision = Math.Pow((1.0/sigma), 2);
+        // double sigma = 0.3;
+        double sigma = 1e-6;
+        double priorPrecision = 1.0/sigma;
+        double likePrecision = 1.0/sigma;
 
         // build regression observations
         double[] tmp = CSVReader.ReadCSVToVector("data/gabor10x10.csv");
@@ -108,7 +108,7 @@ public partial class MainWindow : Window
         // visualize predictions and resposes
         PredictionsVsResponsesVis predVsRespVis = new PredictionsVsResponsesVis();
         predVsRespVis.avaPlot = this.Find<AvaPlot>("PredictionsAvaPlot");
-	predVsRespVis.numPointsToSimDisplay = 20;
+        predVsRespVis.numPointsToSimDisplay = 20;
         predVsRespVis.Process(predAndTrueRespO);
 
         // visualize coefs
