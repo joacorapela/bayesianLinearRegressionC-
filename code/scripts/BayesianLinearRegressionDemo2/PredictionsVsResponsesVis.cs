@@ -25,7 +25,8 @@ public class PredictionsVsResponsesVis
             this._numPointsToSimDisplay = value;
             this._observations = new double[this._numPointsToSimDisplay];
             this._predictions = new double[this._numPointsToSimDisplay];
-            this._scatterPlot = this.avaPlot.Plot.AddScatter(this._observations, this._predictions, lineWidth: 1);
+            this.avaPlot.Plot.AddScatter(new double[] { -4.0, 4.0 }, new double[] { -4.0, 4.0 }, lineWidth: 1, color: Color.Red);
+            this._scatterPlot = this.avaPlot.Plot.AddScatter(this._observations, this._predictions, lineWidth: 0, color: Color.Blue);
             this.avaPlot.Plot.XLabel("Observations");
             this.avaPlot.Plot.YLabel("Predictions");
             this.avaPlot.Plot.SetAxisLimits(-4.0, 4.0, -4.0, 4.0);
@@ -36,6 +37,9 @@ public class PredictionsVsResponsesVis
 
 
     public IObservable<((double, double), double)> Process(IObservable<((double, double), double)> source)
+    // source.Item1.Item1: mean of predictions
+    // source.Item1.Item2: var of predictions
+    // source.Item2: observations
     {
         source.Subscribe(pair =>
         {
@@ -50,4 +54,3 @@ public class PredictionsVsResponsesVis
     }
 
 }
-
