@@ -75,6 +75,7 @@ public partial class MainWindow : Window
 
         IObservable<RegressionObservation> regObsO1 = vcrDs.Process(timer1);
         IObservable<RegressionObservation> regObsO2 = vcrDs.Process(timer2);
+        // IObservable<RegressionObservation> regObsO2 = vcrDs.Process(timer2).Do(onNext: regObs => Console.WriteLine($"regObsO2.t: {regObs.t}"));
 
         // run online Bayesian linear regression
         double[] m0 = new double[coefs.Count];
@@ -88,39 +89,50 @@ public partial class MainWindow : Window
         IObservable<PosteriorDataItem> posDataItemO = posteriorCalculator.Process(regObsO1);
 
         // combine each regObs2 with the latest posDataItem
-        IObservable<(RegressionObservation, PosteriorDataItem)> regObsAndPDIO = regObsO2.WithLatestFrom(posDataItemO, (regObs, pdi) => (regObs, pdi));
+        IObservable<(RegressionObservation, PosteriorDataItem)> aux = regObsO2.WithLatestFrom(posDataItemO, (regObs, pdi) => (regObs, pdi));
+        IObservable<(RegressionObservation, PosteriorDataItem)> regObs2AndPDIO =  aux.Publish().RefCount().Do(source => Console.WriteLine($"regObsAndPDI.t: {source.Item1.t}"));
 
-        // select phis and pdis from regObsAndPDIO
-        // IObservable<(PosteriorDataItem, Vector<double>)> phisAndPDIsO = regObsAndPDIO.Select((regObs, pdi) => (regObs.phi, pdi));
-        var phisAndPDIsO = regObsAndPDIO.Select(regObsAndPDI => (regObsAndPDI.Item1.phi, regObsAndPDI.Item2));
+        // select phis and pdis from regObs2AndPDIO
+        // IObservable<(PosteriorDataItem, Vector<double>)> phisAndPDIsO = regObs2AndPDIO.Select((regObs, pdi) => (regObs.phi, pdi));
+        var phisAndPDIsO = regObs2AndPDIO.Select(regObsAndPDI => (regObsAndPDI.Item1.phi, regObsAndPDI.Item2));
 
-        // select ts from regObsAndPDIO
-        IObservable<double> tsO = regObsAndPDIO.Select(regObsAndPDI => regObsAndPDI.Item1.t);
+        // select ts from regObs2AndPDIO
+        // IObservable<double> tsO = regObs2AndPDIO.Select(regObsAndPDI => regObsAndPDI.Item1.t);
+        // tsO.Subscribe(element => Console.WriteLine($"t: {element}"));
+        IObservable<double> tsO = regObs2AndPDIO.Select(regObsAndPDI => regObsAndPDI.Item1.t).Do(t => Console.WriteLine($"select t: {t}"));
+        // IObservable<double> tsO = regObs2AndPDIO.Select(regObsAndPDI => regObsAndPDI.Item1.t);
+
+        // tsO.Subscribe(t => Console.WriteLine($"t: {t}"));
 
         // computer predictions
         PredictionsCalculator predCalc = new PredictionsCalculator();
         // IObservable<(double, double)> predictionsO = predCalc.Process(phisAndPDIsO);
-        var predictionsO = predCalc.Process(phisAndPDIsO);
+        // var predictionsO = predCalc.Process(phisAndPDIsO);
+        IObservable<(double, double, double)> predictionsO = predCalc.Process(regObs2AndPDIO);
+
+        predictionsO.Subscribe(prediction => Console.WriteLine($"predciton.t={prediction.Item3}"));
 
         // zip predictions with true responses
-        IObservable<((double, double), double)>  predAndTrueRespO = predictionsO.Zip(tsO, (pred, t) => (pred, t));
+        // IObservable<((double, double), double)>  predAndTrueRespO = predictionsO.Zip(tsO, (pred, t) => (pred, t));
+        IObservable<((double, double, double), double)>  predAndTrueRespO = predictionsO.Zip(tsO, (pred, t) => (pred, t));
+        // predAndTrueRespO.Subscribe(element => Console.WriteLine($"predicted_mean: {element.Item1.Item1}, prediction.t: {element.Item1.Item3}, t: {element.Item2}"));
 
         // visualize predictions and resposes
-        PredictionsVsResponsesVis predVsRespVis = new PredictionsVsResponsesVis();
-        predVsRespVis.avaPlot = this.Find<AvaPlot>("PredictionsAvaPlot");
-        predVsRespVis.numPointsToSimDisplay = 20;
-        predVsRespVis.Process(predAndTrueRespO);
+        // PredictionsVsResponsesVis predVsRespVis = new PredictionsVsResponsesVis();
+        // predVsRespVis.avaPlot = this.Find<AvaPlot>("PredictionsAvaPlot");
+        // predVsRespVis.numPointsToSimDisplay = 20;
+        // predVsRespVis.Process(predAndTrueRespO);
 
         // visualize coefs
-        CoefsAndPosteriorVis coefsAndPostVis = new CoefsAndPosteriorVis();
-        coefsAndPostVis.coefs = coefs.ToArray();
-        coefsAndPostVis.window = coefsWin.Find<AvaPlot>("CoefsWindowAvaPlot");
-        posDataItemO.Subscribe(coefsAndPostVis);
+        // CoefsAndPosteriorVis coefsAndPostVis = new CoefsAndPosteriorVis();
+        // coefsAndPostVis.coefs = coefs.ToArray();
+        // coefsAndPostVis.window = coefsWin.Find<AvaPlot>("CoefsWindowAvaPlot");
+        // posDataItemO.Subscribe(coefsAndPostVis);
 
         // true and estimated RFs visualizer
-        TrueAndEstimatedRFsVis trueAndEstRFsVis = new TrueAndEstimatedRFsVis();
-        trueAndEstRFsVis.coefs = coefs.ToArray();
-        trueAndEstRFsVis.window = rfsWin.Find<AvaPlot>("RFsWindowAvaPlot");
-        posDataItemO.Subscribe(trueAndEstRFsVis);
+        // TrueAndEstimatedRFsVis trueAndEstRFsVis = new TrueAndEstimatedRFsVis();
+        // trueAndEstRFsVis.coefs = coefs.ToArray();
+        // trueAndEstRFsVis.window = rfsWin.Find<AvaPlot>("RFsWindowAvaPlot");
+        // posDataItemO.Subscribe(trueAndEstRFsVis);
     }
 }
