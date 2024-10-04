@@ -41,9 +41,9 @@ public partial class MainWindow : Window
         IObservable<RegressionObservation> regObsO2 = vcrDs.Process(timer2);
 
         // run online Bayesian linear regression
-        double[] m0 = new double[coefs.Count];
+        double[] m0 = CSVReader.ReadCSVToVector("data/zeroVecDim100.csv");
+        double[,] S0 = CSVReader.ReadCSVToMatrix("data/identityDim100.csv");
 
-        double[,] S0 = Matrix<double>.Build.DenseIdentity(coefs.Count).ToArray();
         PosteriorCalculator posteriorCalculator = new PosteriorCalculator();
         posteriorCalculator.priorPrecision = priorPrecision;
         posteriorCalculator.likePrecision = likePrecision;
