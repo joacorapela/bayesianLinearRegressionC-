@@ -32,5 +32,32 @@ public class CSVReader
 
         return values_double;
     }
+
+    public static double[,] ReadCSVToMatrix(string filename)
+    {
+        string[] lines = File.ReadAllLines(filename);
+        string[] values_str = lines[0].Split(',');
+        int nRows = lines.Length;
+        var row0Elems = lines[0].Split(",");
+        int nCols = row0Elems.Length;
+        Console.WriteLine($"nRows={nRows}, nCols={nCols}");
+        double[,] answer = new double[nRows, nCols];
+        for (int i = 0; i < nRows; i++)
+        {
+            values_str = lines[i].Split(",");
+            for (int j = 0; j < nCols; j++)
+            {
+                if(double.TryParse(values_str[j], out double result))
+                {
+                    answer[i, j] = result;
+                }
+                else
+                {
+                    throw new FormatException($"Unable to parse '{values_str[j]}' as a double at row {i} and col {j}.");
+                }
+            }
+        }
+        return answer;
+    }
 }
 
