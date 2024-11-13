@@ -1,4 +1,5 @@
 *~
+*.swp
 packages-microsoft-prod.deb
 
 obj/
